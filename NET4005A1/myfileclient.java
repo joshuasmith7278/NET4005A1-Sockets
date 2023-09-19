@@ -22,6 +22,7 @@ class SocketHandling extends Thread{
     int serverPort;
     String filename;
 
+    Boolean filestatus;
     private static DataInputStream inFromServer;
     private static DataOutputStream outToServer;
 
@@ -29,6 +30,24 @@ class SocketHandling extends Thread{
         serverHost = s;
         serverPort = p;
         filename = f;
+    }
+
+    public static void receiveFile(String filename) throws IOException{
+        int bytes = 0;
+        FileOutputStream fileOutputStream = new FileOutputStream(filename);
+
+        long size = inFromServer.readLong();
+       
+        byte[] buffer = new byte[4 * 1024];
+
+        while(size > 0 && (bytes = inFromServer.read(
+            buffer, 0, (int)Math.min(buffer.length, size)
+        )) != -1){
+            fileOutputStream.write(buffer, 0, bytes);
+            size-= bytes;
+        }
+        System.out.println("File Recieved");
+        fileOutputStream.close();
     }
 
 
@@ -47,6 +66,17 @@ class SocketHandling extends Thread{
 
             //Process and Display Server Response
             System.out.println(inFromServer.readUTF());
+            filestatus = inFromServer.readBoolean();
+            
+            if(filestatus){
+                receiveFile(filename);
+
+            }else{
+                System.out.println("File not on Server");
+            }
+
+            
+
 
             //If file is found, recieve and save the file
 

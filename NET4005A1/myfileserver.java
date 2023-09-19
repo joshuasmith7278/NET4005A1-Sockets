@@ -34,20 +34,74 @@ public class myfileserver {
 class WorkerThread extends Thread {
     //Implememnt handle single client request including stats and transferring files
     Socket client;
+    static DataInputStream inFromClient;
+    static DataOutputStream outToClient;
+    static String filename;
+    static boolean filestatus = false;
 
     WorkerThread(Socket c){
         client = c;
     }
+
+    public static void checkForFile(String file) throws IOException{
+  
+            File dir = new File(".");
+            String[] fileList = dir.list();
+
+            for(int i = 0; i < fileList.length; i++){
+                if(fileList[i].equals(file)){
+                    filestatus = true;
+                    break;
+
+                }
+            }
+       
+    }
+
+
+
+
+    public static void sendFile(String f) throws IOException{
+        
+
+        int bytes = 0;
+        File file = new File(f);
+        FileInputStream fileReader = new FileInputStream(file);
+
+        outToClient.writeLong(file.length());
+        byte[] buffer = new byte[4 * 1024];
+        while((bytes = fileReader.read(buffer)) != -1){
+            outToClient.write(buffer, 0 , bytes);
+            outToClient.flush();
+        }
+
+           
+
+        
+        fileReader.close();
+
+        
+
+    }
+
+
+
 
     public void run(){
         InetAddress inet = client.getInetAddress();
         System.out.println("Client hostname : " + inet.getHostAddress());
         System.out.println("Client IP : " + inet.getHostAddress());
         try{
-            DataInputStream inFromClient = new DataInputStream(client.getInputStream());
-            DataOutputStream outToClient = new DataOutputStream(client.getOutputStream());
-            outToClient.writeUTF("TCP Response from Server");
-            System.out.println(inFromClient.readUTF());
+            inFromClient = new DataInputStream(client.getInputStream());
+            outToClient = new DataOutputStream(client.getOutputStream());
+            outToClient.writeUTF("TCP Response from Server :");
+            filename = inFromClient.readUTF();
+            checkForFile(filename);
+            outToClient.writeBoolean(filestatus);
+            if(filestatus){
+                sendFile(filename);
+            }
+            
 
 
         }catch(IOException ex){
@@ -57,6 +111,9 @@ class WorkerThread extends Thread {
        
 
     }
+
+
+    
 
 }
 
