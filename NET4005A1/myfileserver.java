@@ -10,38 +10,108 @@ import java.util.concurrent.TimeUnit;
 public class myfileserver {
     public static void main(String[] args){
         //Create Server socket and listen for connections
-        int port = 8000;
+       
+       
+            try{
+                 //Create thread pol for client requests
+                MultiThreadServer mt = new MultiThreadServer(8000);
+                mt.start();
 
-        try{
-            ServerSocket server = new ServerSocket(port);
+                while(true){
+                    //Implement logic to handle single client request
+                    
+                    
+                }
 
-            //Create thread pol for client requests
-
-            while(true){
-                //Implement logic to handle single client request
-                Socket client = server.accept();
-                WorkerThread thread = new WorkerThread(client);
-                thread.start();
+            }catch(IOException ex){
+                System.out.println(ex);
             }
+           
 
-        }catch(IOException ex){
-            System.out.println(ex);
-        }
         
     }
 }
 
+/*
+ * MULTI THREAD SERVER
+ * 
+ * BLOCKING QUEUE=
+ * array used to queue threads which are waiting for WorkerThread to be available
+ * 
+ * THREAD POOL EXECUTOR=
+ * 
+ * 
+ * 
+ * 
+ * 
+ */
+
+class MultiThreadServer{
+    static int port;
+
+    MultiThreadServer(int p){
+        port = p;
+        
+    }
+    public void start() throws IOException{
+        System.out.println("Server Running on " + port);
+        ServerSocket server = new ServerSocket(port);
+
+    
+        BlockingQueue<Runnable> queue = new ArrayBlockingQueue<Runnable>(100);
+
+        ThreadPoolExecutor executorpool = new ThreadPoolExecutor(10, 10, 10, TimeUnit.SECONDS, queue);
+
+        
+
+       
+        for(int i = 0; i < 20; i++){
+            System.out.println("Thread : " + i);
+            executorpool.submit(new WorkerThread(server));
+            System.out.println(executorpool.getActiveCount());
+            System.out.println(queue.remainingCapacity());
+
+
+            
+        }
+
+        executorpool.shutdown();
+    }
+
+}
+
+
+
 class WorkerThread extends Thread {
-    //Implememnt handle single client request including stats and transferring files
-    Socket client;
+    
+    static Socket client;
+    static ServerSocket name;
     static DataInputStream inFromClient;
     static DataOutputStream outToClient;
     static String filename;
     static boolean filestatus = false;
 
-    WorkerThread(Socket c){
-        client = c;
+
+
+    WorkerThread(ServerSocket s){
+        name = s;
     }
+
+
+    /*
+     * SEARCH FOR FILE
+     * 
+     * PARAMS = 
+     * filename of file you want to search for 
+     * 
+     * FUNC = 
+     * Search list of files in current dir for PARAMS. 
+     * If found, set filestatus to TRUE
+     * 
+     * 
+     * 
+     * 
+     */
 
     public static void checkForFile(String file) throws IOException{
   
@@ -55,14 +125,28 @@ class WorkerThread extends Thread {
 
                 }
             }
+
        
     }
 
 
 
-
+    /*
+     * SEND FILE
+     * 
+     * PARAMS = 
+     * filename of file you want to send
+     * 
+     * FUNC =
+     * Segment file as BUFFER and send to CLIENT.
+     * Once BUFFER is empty CLOSE file stream
+     * 
+     * 
+     * 
+     * 
+     */
     public static void sendFile(String f) throws IOException{
-        
+
 
         int bytes = 0;
         File file = new File(f);
@@ -75,32 +159,39 @@ class WorkerThread extends Thread {
             outToClient.flush();
         }
 
-           
-
-        
         fileReader.close();
-
-        
-
     }
 
 
 
 
+
     public void run(){
-        InetAddress inet = client.getInetAddress();
-        System.out.println("Client hostname : " + inet.getHostAddress());
-        System.out.println("Client IP : " + inet.getHostAddress());
+         
         try{
+            client = name.accept();
+            InetAddress inet = client.getInetAddress();
+            System.out.println("Client hostname : " + inet.getHostAddress());
+            System.out.println("Client IP : " + inet.getHostAddress());
+            
+           
             inFromClient = new DataInputStream(client.getInputStream());
             outToClient = new DataOutputStream(client.getOutputStream());
             outToClient.writeUTF("TCP Response from Server :");
             filename = inFromClient.readUTF();
+
+            //CHECKS FILE AVAILABILITY
             checkForFile(filename);
             outToClient.writeBoolean(filestatus);
+
+            //TRANSFERS FILE TO CLIENT
             if(filestatus){
-                sendFile(filename);
+                //sendFile(filename);
+                System.out.println("DOWNLOADING FILE");
             }
+
+            filestatus=false;
+
             
 
 

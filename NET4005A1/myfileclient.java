@@ -32,6 +32,18 @@ class SocketHandling extends Thread{
         filename = f;
     }
 
+    /*
+     * RECEIVE FILE
+     * 
+     * PARAMS=
+     * path/name of file destination
+     * 
+     * FUNC=
+     * Read segments from SERVER and write them to file location.
+     * Once the buffer size is empty, CLOSE the stream
+     * 
+     * 
+     */
     public static void receiveFile(String filename) throws IOException{
         int bytes = 0;
         FileOutputStream fileOutputStream = new FileOutputStream(filename);
@@ -50,11 +62,24 @@ class SocketHandling extends Thread{
         fileOutputStream.close();
     }
 
-
-    //With threads, call run method 
+    
+    /*
+     * RUN
+     * 
+     * FUNC=
+     * Establish a socket connection to the server
+     * 
+     * Send request to SERVER
+     * 
+     * Print SERVER response
+     * Save filestatus response
+     * If file exists, recieve file
+     * 
+     * 
+     */
     public void run(){
         try{
-            //Establish a socket connection to the server
+            
             Socket socket = new Socket(serverHost, serverPort);
             inFromServer = new DataInputStream(socket.getInputStream());
             outToServer = new DataOutputStream(socket.getOutputStream());
