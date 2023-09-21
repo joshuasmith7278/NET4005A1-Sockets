@@ -15,7 +15,10 @@ public class myfileserver {
             try{
                  //Create thread pol for client requests
                 MultiThreadServer mt = new MultiThreadServer(8000);
-                mt.start();
+                mt.startMultiThreadPool();
+
+                System.out.println("Active Threads : ");
+                mt.getActiveThreads();
 
                 while(true){
                     //Implement logic to handle single client request
@@ -48,34 +51,52 @@ public class myfileserver {
 
 class MultiThreadServer{
     static int port;
+    static int activeThreads = 0;
 
     MultiThreadServer(int p){
         port = p;
         
     }
-    public void start() throws IOException{
+
+    public void getActiveThreads(){
+        System.out.println(activeThreads);
+    }
+
+
+    public void startMultiThreadPool() throws IOException{
         System.out.println("Server Running on " + port);
         ServerSocket server = new ServerSocket(port);
 
     
         BlockingQueue<Runnable> queue = new ArrayBlockingQueue<Runnable>(100);
 
-        ThreadPoolExecutor executorpool = new ThreadPoolExecutor(10, 10, 10, TimeUnit.SECONDS, queue);
+        ThreadPoolExecutor executorpool = new ThreadPoolExecutor(4, 4, 10, TimeUnit.SECONDS, queue);
+
+        System.out.println("Active Threads: " + String.valueOf(activeThreads));
+    
+        //IF activeCount is less than 10, add Task to threadPool. Else add task to queue
+
+        WorkerThread task = new WorkerThread(server);
+        WorkerThread task1 = new WorkerThread(server);
+        WorkerThread task2 = new WorkerThread(server);
+        WorkerThread task3 = new WorkerThread(server);
+        WorkerThread task4 = new WorkerThread(server);
+        WorkerThread task5 = new WorkerThread(server);
 
         
-
        
-        for(int i = 0; i < 20; i++){
-            System.out.println("Thread : " + i);
-            executorpool.submit(new WorkerThread(server));
-            System.out.println(executorpool.getActiveCount());
-            System.out.println(queue.remainingCapacity());
+        executorpool.submit(task);
+        executorpool.submit(task2);
+        executorpool.submit(task1);
+        executorpool.submit(task3);
+        executorpool.submit(task4);
+        executorpool.submit(task5);
 
-
-            
-        }
-
+        System.out.println("Active Threads" + queue.remainingCapacity());
         executorpool.shutdown();
+
+
+        
     }
 
 }
@@ -90,11 +111,14 @@ class WorkerThread extends Thread {
     static DataOutputStream outToClient;
     static String filename;
     static boolean filestatus = false;
+    private long createdTime;
 
 
 
     WorkerThread(ServerSocket s){
         name = s;
+        System.out.println("Thread Created");
+        this.createdTime = System.currentTimeMillis();
     }
 
 
@@ -165,9 +189,20 @@ class WorkerThread extends Thread {
 
 
 
-
+    @Override
     public void run(){
+        Thread currenThread = Thread.currentThread();
+        long waitedTime = System.currentTimeMillis() - createdTime;
+        System.out.println("Thread got CPU after waiting " + waitedTime + "ms with thread " + currenThread.getName());
+         try{
+            
+            Thread.sleep(10000);
+            System.out.println("Thread done. Releasing thread " + currenThread.getName());
+            
+        }catch(InterruptedException ex){}
+    
          
+        /* 
         try{
             client = name.accept();
             InetAddress inet = client.getInetAddress();
@@ -194,11 +229,18 @@ class WorkerThread extends Thread {
 
             
 
+            
+            
+
+            
+
 
         }catch(IOException ex){
             System.out.println(ex);
         }
-    
+        */
+
+       
        
 
     }
