@@ -17,17 +17,10 @@ public class myfileserver {
                 MultiThreadServer mt = new MultiThreadServer(8000);
                 mt.startMultiThreadPool();
 
-                System.out.println("Active Threads : ");
-                mt.getActiveThreads();
-
-                while(true){
-                    //Implement logic to handle single client request
-                    
-                    
-                }
+               
 
             }catch(IOException ex){
-                System.out.println(ex);
+                System.out.println("Server error : " + ex);
             }
            
 
@@ -35,19 +28,7 @@ public class myfileserver {
     }
 }
 
-/*
- * MULTI THREAD SERVER
- * 
- * BLOCKING QUEUE=
- * array used to queue threads which are waiting for WorkerThread to be available
- * 
- * THREAD POOL EXECUTOR=
- * 
- * 
- * 
- * 
- * 
- */
+
 
 class MultiThreadServer{
     static int port;
@@ -64,38 +45,24 @@ class MultiThreadServer{
 
 
     public void startMultiThreadPool() throws IOException{
-        System.out.println("Server Running on " + port);
         ServerSocket server = new ServerSocket(port);
+        Socket client = new Socket();
 
     
         BlockingQueue<Runnable> queue = new ArrayBlockingQueue<Runnable>(100);
 
-        ThreadPoolExecutor executorpool = new ThreadPoolExecutor(4, 4, 10, TimeUnit.SECONDS, queue);
+        ThreadPoolExecutor executorpool = new ThreadPoolExecutor(10, 10, 10, TimeUnit.SECONDS, queue);
 
-        System.out.println("Active Threads: " + String.valueOf(activeThreads));
-    
-        //IF activeCount is less than 10, add Task to threadPool. Else add task to queue
+        ServerStatistics stats = new ServerStatistics(0,  0);
 
-        WorkerThread task = new WorkerThread(server);
-        WorkerThread task1 = new WorkerThread(server);
-        WorkerThread task2 = new WorkerThread(server);
-        WorkerThread task3 = new WorkerThread(server);
-        WorkerThread task4 = new WorkerThread(server);
-        WorkerThread task5 = new WorkerThread(server);
+        while(true){
+            client = server.accept();
+            executorpool.submit(new WorkerThread(client, stats));
+           
+
+        }
 
         
-       
-        executorpool.submit(task);
-        executorpool.submit(task2);
-        executorpool.submit(task1);
-        executorpool.submit(task3);
-        executorpool.submit(task4);
-        executorpool.submit(task5);
-
-        System.out.println("Active Threads" + queue.remainingCapacity());
-        executorpool.shutdown();
-
-
         
     }
 
@@ -106,38 +73,29 @@ class MultiThreadServer{
 class WorkerThread extends Thread {
     
     static Socket client;
-    static ServerSocket name;
     static DataInputStream inFromClient;
     static DataOutputStream outToClient;
-    static String filename;
+    String filename;
     static boolean filestatus = false;
-    private long createdTime;
+    static ServerStatistics stats;
+    int N;
+    int M;
+   
+   
 
 
 
-    WorkerThread(ServerSocket s){
-        name = s;
-        System.out.println("Thread Created");
-        this.createdTime = System.currentTimeMillis();
+    WorkerThread(Socket c, ServerStatistics s){
+        client = c;
+        stats = s;
+        N = stats.getN() + 1;
+        
+       
     }
 
 
-    /*
-     * SEARCH FOR FILE
-     * 
-     * PARAMS = 
-     * filename of file you want to search for 
-     * 
-     * FUNC = 
-     * Search list of files in current dir for PARAMS. 
-     * If found, set filestatus to TRUE
-     * 
-     * 
-     * 
-     * 
-     */
 
-    public static void checkForFile(String file) throws IOException{
+     synchronized boolean checkForFile(String file) throws IOException{
   
             File dir = new File(".");
             String[] fileList = dir.list();
@@ -145,31 +103,19 @@ class WorkerThread extends Thread {
             for(int i = 0; i < fileList.length; i++){
                 if(fileList[i].equals(file)){
                     filestatus = true;
-                    break;
+                  
+                    return true;
+                    
 
                 }
             }
+            return false;
 
        
     }
 
 
-
-    /*
-     * SEND FILE
-     * 
-     * PARAMS = 
-     * filename of file you want to send
-     * 
-     * FUNC =
-     * Segment file as BUFFER and send to CLIENT.
-     * Once BUFFER is empty CLOSE file stream
-     * 
-     * 
-     * 
-     * 
-     */
-    public static void sendFile(String f) throws IOException{
+    synchronized void sendFile(String f) throws IOException{
 
 
         int bytes = 0;
@@ -183,6 +129,8 @@ class WorkerThread extends Thread {
             outToClient.flush();
         }
 
+
+        
         fileReader.close();
     }
 
@@ -190,58 +138,69 @@ class WorkerThread extends Thread {
 
 
     @Override
-    public void run(){
-        Thread currenThread = Thread.currentThread();
-        long waitedTime = System.currentTimeMillis() - createdTime;
-        System.out.println("Thread got CPU after waiting " + waitedTime + "ms with thread " + currenThread.getName());
-         try{
-            
-            Thread.sleep(10000);
-            System.out.println("Thread done. Releasing thread " + currenThread.getName());
-            
-        }catch(InterruptedException ex){}
-    
-         
-        /* 
+    public synchronized void run() {
+       
         try{
-            client = name.accept();
-            InetAddress inet = client.getInetAddress();
-            System.out.println("Client hostname : " + inet.getHostAddress());
-            System.out.println("Client IP : " + inet.getHostAddress());
+
+            stats.setN(N);
             
-           
+            
+            InetAddress inet = client.getInetAddress();
+        
             inFromClient = new DataInputStream(client.getInputStream());
             outToClient = new DataOutputStream(client.getOutputStream());
-            outToClient.writeUTF("TCP Response from Server :");
+
+            //2. Server Checks for File "X" in current directory
             filename = inFromClient.readUTF();
+            
+            outToClient.writeBoolean(checkForFile(filename));
 
-            //CHECKS FILE AVAILABILITY
-            checkForFile(filename);
-            outToClient.writeBoolean(filestatus);
-
+            
+            
+            
+            
+            System.out.println("REQ " + N + ": File " + filename + " requested from " + inet.getHostAddress());
+            outToClient.writeInt(stats.getN());
+           
             //TRANSFERS FILE TO CLIENT
-            if(filestatus){
-                //sendFile(filename);
-                System.out.println("DOWNLOADING FILE");
+            if(checkForFile(filename)){
+                
+                M = stats.getM() + 1;
+                outToClient.writeInt(M);
+                stats.setM(M);
+                
+                
+                sendFile(filename);
+                Thread.sleep(5000);
+                
+                System.out.println("REQ " + N + ": Successful");
+                
+
+            }else{
+                outToClient.writeInt(stats.getM());
+                System.out.println("REQ " + N + ": Not Successful");
             }
 
+           
+
+            System.out.println("REQ " + N + ": Total successful requests so far = " + String.valueOf(M));
+
+           
+
+
             filestatus=false;
+            
+            System.out.println("REQ " + N + ": File transfer complete");
 
             
-
-            
-            
-
+           
+          
             
 
-
-        }catch(IOException ex){
-            System.out.println(ex);
+        }catch(InterruptedException | IOException ex){
+            System.out.println("Thread error : " + ex);
         }
-        */
 
-       
-       
 
     }
 
@@ -251,29 +210,32 @@ class WorkerThread extends Thread {
 }
 
 
+class ServerStatistics {
+    int N;
+    int M;
 
-
-/* 
- class multiThreadServer {
-    public static void main(String[] args){
-        BlockingQueue queue = new ArrayBlockingQueue<>(100);
-
-        ThreadPoolExecutor executorpool = new ThreadPoolExecutor(10, 10, 10, TimeUnit.SECONDS, queue);
-
-        executorpool.prestartAllCoreThreads();
-
-       
-        for(int i = 0; i < 10; i++){
-            queue.offer(new WorkerThread(String.valueOf(i)));
-            
-        }
-
-        executorpool.shutdown();
+    ServerStatistics(int n, int m){
+        N = n;
+        M = m;
     }
+
+    public synchronized int getM() {
+        return M;
+    }
+
+    public synchronized int getN() {
+        return N;
+    }
+
+    public synchronized void setM(int m) {
+        M = m;
+    }
+
+    public synchronized void setN(int n) {
+        N = n;
+    }
+
 }
-
-
-*/
 
  
 

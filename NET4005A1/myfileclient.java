@@ -44,7 +44,7 @@ class SocketHandling extends Thread{
      * 
      * 
      */
-    public static void receiveFile(String filename) throws IOException{
+    public static synchronized void receiveFile(String filename) throws IOException{
         int bytes = 0;
         FileOutputStream fileOutputStream = new FileOutputStream(filename);
 
@@ -86,19 +86,37 @@ class SocketHandling extends Thread{
 
 
 
-            //Send Request to Server
+            //1. Client asks for File "X"
             outToServer.writeUTF(filename);
 
             //Process and Display Server Response
-            System.out.println(inFromServer.readUTF());
+            
             filestatus = inFromServer.readBoolean();
+
+             int N = inFromServer.readInt();
+            int M = inFromServer.readInt();
+
+           
+            
             
             if(filestatus){
+                System.out.println("File " + filename + " found at server");
+                System.out.println("Server handled " + String.valueOf(N) + " requests, " + String.valueOf(M) + " requests were successful");
+                System.out.println("Downloading file " + filename);
                 receiveFile(filename);
+                System.out.println("Download complete");
+
 
             }else{
-                System.out.println("File not on Server");
+                System.out.println("File " + filename + " not found at server");
+                System.out.println("Server handled " + String.valueOf(N) + " requests, " + String.valueOf(M) + " requests were successful");
+
             }
+
+            
+
+           
+
 
             
 
