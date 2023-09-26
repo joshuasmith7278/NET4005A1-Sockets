@@ -32,7 +32,19 @@ class SocketHandling extends Thread{
         filename = f;
     }
 
-    public static void receiveFile(String filename) throws IOException{
+    /*
+     * RECEIVE FILE
+     * 
+     * PARAMS=
+     * path/name of file destination
+     * 
+     * FUNC=
+     * Read segments from SERVER and write them to file location.
+     * Once the buffer size is empty, CLOSE the stream
+     * 
+     * 
+     */
+    public static synchronized void receiveFile(String filename) throws IOException{
         int bytes = 0;
         FileOutputStream fileOutputStream = new FileOutputStream(filename);
 
@@ -50,30 +62,61 @@ class SocketHandling extends Thread{
         fileOutputStream.close();
     }
 
-
-    //With threads, call run method 
+    
+    /*
+     * RUN
+     * 
+     * FUNC=
+     * Establish a socket connection to the server
+     * 
+     * Send request to SERVER
+     * 
+     * Print SERVER response
+     * Save filestatus response
+     * If file exists, recieve file
+     * 
+     * 
+     */
     public void run(){
         try{
-            //Establish a socket connection to the server
+            
             Socket socket = new Socket(serverHost, serverPort);
             inFromServer = new DataInputStream(socket.getInputStream());
             outToServer = new DataOutputStream(socket.getOutputStream());
 
 
 
-            //Send Request to Server
+            //1. Client asks for File "X"
             outToServer.writeUTF(filename);
 
             //Process and Display Server Response
-            System.out.println(inFromServer.readUTF());
+            
             filestatus = inFromServer.readBoolean();
+
+             int N = inFromServer.readInt();
+            int M = inFromServer.readInt();
+
+           
+            
             
             if(filestatus){
+                System.out.println("File " + filename + " found at server");
+                System.out.println("Server handled " + String.valueOf(N) + " requests, " + String.valueOf(M) + " requests were successful");
+                System.out.println("Downloading file " + filename);
                 receiveFile(filename);
+                System.out.println("Download complete");
+
 
             }else{
-                System.out.println("File not on Server");
+                System.out.println("File " + filename + " not found at server");
+                System.out.println("Server handled " + String.valueOf(N) + " requests, " + String.valueOf(M) + " requests were successful");
+
             }
+
+            
+
+           
+
 
             
 
