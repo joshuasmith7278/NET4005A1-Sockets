@@ -79,7 +79,7 @@ class WorkerThread extends Thread {
     static boolean filestatus = false;
     static ServerStatistics stats;
     int N;
-    int M;
+    
    
    
 
@@ -89,6 +89,7 @@ class WorkerThread extends Thread {
         client = c;
         stats = s;
         N = stats.getN() + 1;
+        
         
        
     }
@@ -157,7 +158,7 @@ class WorkerThread extends Thread {
 
             
             
-            
+            int m;
             
             System.out.println("REQ " + N + ": File " + filename + " requested from " + inet.getHostAddress());
             outToClient.writeInt(stats.getN());
@@ -165,9 +166,10 @@ class WorkerThread extends Thread {
             //TRANSFERS FILE TO CLIENT
             if(checkForFile(filename)){
                 
-                M = stats.getM() + 1;
-                outToClient.writeInt(M);
-                stats.setM(M);
+                m = stats.getM() + 1;
+                outToClient.writeInt(m);
+                stats.setM(m);
+                
                 
                 
                 sendFile(filename);
@@ -177,14 +179,16 @@ class WorkerThread extends Thread {
                 
 
             }else{
-                outToClient.writeInt(stats.getM());
+                m = stats.getM();
+                outToClient.writeInt(m);
                 System.out.println("REQ " + N + ": Not Successful");
             }
 
            
+           
+            System.out.println("REQ " + N + ": Total successful requests so far = " + String.valueOf(m));
 
-            System.out.println("REQ " + N + ": Total successful requests so far = " + String.valueOf(M));
-
+           
            
 
 
