@@ -118,15 +118,13 @@ class WorkerThread extends Thread {
 
     synchronized void sendFile(String f) throws IOException{
 
-
-        int bytes = 0;
         File file = new File(f);
         FileInputStream fileReader = new FileInputStream(file);
 
         outToClient.writeLong(file.length());
-        byte[] buffer = new byte[4 * 1024];
-        while((bytes = fileReader.read(buffer)) != -1){
-            outToClient.write(buffer, 0 , bytes);
+        int byteRead;
+        while((byteRead = fileReader.read()) != -1){
+            outToClient.write(byteRead);
             outToClient.flush();
         }
 

@@ -32,51 +32,38 @@ class SocketHandling extends Thread{
         filename = f;
     }
 
-    /*
-     * RECEIVE FILE
-     * 
-     * PARAMS=
-     * path/name of file destination
-     * 
-     * FUNC=
-     * Read segments from SERVER and write them to file location.
-     * Once the buffer size is empty, CLOSE the stream
-     * 
-     * 
-     */
     public static synchronized void receiveFile(String filename) throws IOException{
-        int bytes = 0;
+       
         FileOutputStream fileOutputStream = new FileOutputStream(filename);
 
         long size = inFromServer.readLong();
+
+       
+      
+
+        while(size > 0){
+            int currentByte = inFromServer.read();
+            fileOutputStream.write(currentByte);
+            size --;
+        }
+
+       /*
+        * 
+
+
        
         byte[] buffer = new byte[4 * 1024];
 
-        while(size > 0 && (bytes = inFromServer.read(
-            buffer, 0, (int)Math.min(buffer.length, size)
-        )) != -1){
+        while(size > 0 && (bytes = inFromServer.read(buffer, 0, (int)Math.min(buffer.length, size))) != -1){
             fileOutputStream.write(buffer, 0, bytes);
             size-= bytes;
         }
+        */
         System.out.println("File Recieved");
         fileOutputStream.close();
     }
 
-    
-    /*
-     * RUN
-     * 
-     * FUNC=
-     * Establish a socket connection to the server
-     * 
-     * Send request to SERVER
-     * 
-     * Print SERVER response
-     * Save filestatus response
-     * If file exists, recieve file
-     * 
-     * 
-     */
+
     public void run(){
         try{
             
@@ -113,18 +100,7 @@ class SocketHandling extends Thread{
 
             }
 
-            
-
-           
-
-
-            
-
-
-            //If file is found, recieve and save the file
-
-
-            //Catch any errors with connecting to the socket. Print any errors
+        
         }catch(IOException ex){
             System.out.println(ex);
         }
