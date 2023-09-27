@@ -1,4 +1,4 @@
--------------=====-------- NET4005 Network Applications Assignment 1 ------------------------------------
+-------------=====---------- NET4005 Network Applications Assignment 1 ------------------------------------
 
 Implement a Client-Server File transfer application. The Server should use multithreading and concurrency 
 to handle client requests. Server will track and send statistics.
@@ -6,7 +6,7 @@ to handle client requests. Server will track and send statistics.
 N = total client requests
 M = successful file transfers
 
----------------------------------------- Logical Process ----------------------------------------------
+------------------------------------------- Logical Process ----------------------------------------------
 
 Client.java requests Server.java for File "X"
 
@@ -16,10 +16,11 @@ If(File "X" exists on the Server)
 Respond to the Client with the File status and server statistics
 
 
-------------------------------------- myfileclient.java -----------------------------------------------
+----------------------------------------- myfileclient.java -----------------------------------------------
 
 
 Class myfileclient
+
 main()
 - This function handles the client request input. We check to see that all 3 required arguments (host, port, filename)
 are input from the user. 
@@ -33,7 +34,7 @@ through the Socket Handler Class
 Class SocketHandling extends Thread
 
 SocketHandling()
-- Create local instances of the server hostname, port #, and filename
+- Save local instances of the server hostname, port #, and filename
 
 
 
@@ -52,4 +53,87 @@ main()
 - If the File Status is true, 
     - We display the USER INTERFACE
     - We call our recieve file method to "download" the file from the server
+
+
+
+--------------------------------------- myfileserver.java -----------------------------------------------------------
+
+Class myfileserver
+
+main()
+- This function creates a MultiThreadServer object and starts its
+
+
+
+
+
+
+class MultiThreadServer
+
+MultiThreadServer(int p)
+- This class takes in the port we want to host our Application on (p) and save it to a local variable (port)
+
+StartMultiThreadPool()
+- Create a ServerSocket object to be the Server , and a Socket object to be the client
+- Create a queue to hold excess requests
+- Create a threadpool to limit the amount of threads working
+- Create a ServerStatistics object to keep track of the servers statistics through its runtime
+- While(true)
+    - If a client tries to connect to the Server Socket, accept them 
+    - Submit them to the thread pool for execution
+    - If the thread pool is filled, the extra threads go to the queue
+
+
+
+
+
+
+
+class WorkerThread
+- Creates a Thread for each Client Request
+- Handles the file trasnfer for individual requests
+
+WorkerThread()
+- Creates a copy of the Server and Client objects to handle stream communication
+
+
+checkForFile()
+- Checks all the files in its current directory for the filename requested by the client
+- If found
+    - Set the file status variable to true
+-else
+    -The file status is set to false
+
+
+sendFile()
+- Uses FileInputStream to read the contents of a file
+- Uses Stream Sockets to send one byte of the file at a time to the client.
+- The client reads and puts together the file, one byte at a time
+
+
+
+run()
+- Creates Stream Socket channels (inFromClient and outToServer) between Server and Client
+- Read for requested file from Client
+- Check for file requested
+- If File exists,
+    - Call our send file method to "transfer" the file to the client
+
+- Print the updated server statistics to include the current requests
+
+
+
+
+
+
+
+class ServerStatistics
+- A class that holds information related to two statistics N and M
+- Each have methods to GET and SET their objects variables.
+
+
+
+
+
+
 

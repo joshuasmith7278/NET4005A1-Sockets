@@ -32,7 +32,7 @@ class SocketHandling extends Thread{
         filename = f;
     }
 
-    public static synchronized void receiveFile(String filename) throws IOException{
+    public static void receiveFile(String filename) throws IOException{
        
         FileOutputStream fileOutputStream = new FileOutputStream(filename);
 
@@ -47,18 +47,6 @@ class SocketHandling extends Thread{
             size --;
         }
 
-       /*
-        * 
-
-
-       
-        byte[] buffer = new byte[4 * 1024];
-
-        while(size > 0 && (bytes = inFromServer.read(buffer, 0, (int)Math.min(buffer.length, size))) != -1){
-            fileOutputStream.write(buffer, 0, bytes);
-            size-= bytes;
-        }
-        */
         System.out.println("File Recieved");
         fileOutputStream.close();
     }
