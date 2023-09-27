@@ -19,7 +19,7 @@ Respond to the Client with the File status and server statistics
 ----------------------------------------- myfileclient.java -----------------------------------------------
 
 
-Class myfileclient
+Class myfileclient{
 
 main()
 - This function handles the client request input. We check to see that all 3 required arguments (host, port, filename)
@@ -27,11 +27,13 @@ are input from the user.
 - If we have all the arguments required, we can create a Socket with those parameters. This is done 
 through the Socket Handler Class
 
+}
 
 
 
 
-Class SocketHandling extends Thread
+
+Class SocketHandling extends Thread{
 
 SocketHandling()
 - Save local instances of the server hostname, port #, and filename
@@ -54,21 +56,25 @@ main()
     - We display the USER INTERFACE
     - We call our recieve file method to "download" the file from the server
 
+}
+
 
 
 --------------------------------------- myfileserver.java -----------------------------------------------------------
 
-Class myfileserver
+Class myfileserver{
 
 main()
 - This function creates a MultiThreadServer object and starts its
 
+}
 
 
 
 
 
-class MultiThreadServer
+
+class MultiThreadServer{
 
 MultiThreadServer(int p)
 - This class takes in the port we want to host our Application on (p) and save it to a local variable (port)
@@ -83,13 +89,15 @@ StartMultiThreadPool()
     - Submit them to the thread pool for execution
     - If the thread pool is filled, the extra threads go to the queue
 
+}
 
 
 
 
 
 
-class WorkerThread
+
+class WorkerThread{
 - Creates a Thread for each Client Request
 - Handles the file trasnfer for individual requests
 
@@ -121,15 +129,19 @@ run()
 
 - Print the updated server statistics to include the current requests
 
+}
 
 
 
 
 
 
-class ServerStatistics
+
+class ServerStatistics{
 - A class that holds information related to two statistics N and M
 - Each have methods to GET and SET their objects variables.
+
+}
 
 
 

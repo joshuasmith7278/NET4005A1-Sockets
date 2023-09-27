@@ -1,0 +1,33 @@
+The protocol will transfer a file from the local directory of the server application, to the current directory the client
+application is ran from. The server must be running before any file requests can be handled.
+
+Set up:
+
+Server Terminal :
+
+W:\NET4005\Assignment1> java myfileserver.java 
+
+Client Terminal:
+
+C:\Users\joshu> java W:\NET4005\Assignment1\myfileclient.java localhost 8000 pic.png
+
+
+This will download pic.png from W:\NET4005\Assigments1 and write the file to C:\Users\joshu
+
+The desired file must exist in the W:\NET4005\Assigments1 to be downloaded to the client.
+
+
+You must specify the 3 required arguments in the client execution. (Server hostname, server port, filename)
+
+
+
+
+
+
+
+First we create a Stream Socket server to listen to 
+port 8000 on the server application. We create a Socket 
+between any application 
+
+On the client application, we create a Socket with the 
+parameters of the Stream Socket Server (localhost, 8000)
