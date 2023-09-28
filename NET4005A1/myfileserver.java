@@ -51,7 +51,7 @@ class MultiThreadServer{
     
         BlockingQueue<Runnable> queue = new ArrayBlockingQueue<Runnable>(100);
 
-        ThreadPoolExecutor executorpool = new ThreadPoolExecutor(10, 10, 10, TimeUnit.SECONDS, queue);
+        ThreadPoolExecutor executorpool = new ThreadPoolExecutor(10, 10, 100, TimeUnit.SECONDS, queue);
 
         ServerStatistics stats = new ServerStatistics(0,  0);
 
@@ -121,12 +121,18 @@ class WorkerThread extends Thread {
         File file = new File(f);
         FileInputStream fileReader = new FileInputStream(file);
 
+
+        byte[] buffer = new byte[4096];
         outToClient.writeLong(file.length());
         int byteRead;
-        while((byteRead = fileReader.read()) != -1){
-            outToClient.write(byteRead);
+        while((byteRead = fileReader.read(buffer)) != -1){
+            System.out.println(byteRead);
+            outToClient.write(buffer, 0, byteRead);
             outToClient.flush();
+            
         }
+        
+      
 
 
         

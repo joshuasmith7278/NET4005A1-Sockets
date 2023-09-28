@@ -40,11 +40,23 @@ class SocketHandling extends Thread{
 
        
       
+        byte[] buffer = new byte[4096];
 
+
+        int currentByte;
+        
         while(size > 0){
-            int currentByte = inFromServer.read();
-            fileOutputStream.write(currentByte);
-            size --;
+            currentByte = inFromServer.read(buffer, 0, (int) Math.min(buffer.length, size));
+            if(currentByte == -1){
+                break;
+            }
+            
+            System.out.println(size);
+            System.out.println(currentByte);
+            
+            
+            fileOutputStream.write(buffer, 0, currentByte);
+            size -= currentByte;
         }
 
         System.out.println("File Recieved");
@@ -67,8 +79,9 @@ class SocketHandling extends Thread{
             //Process and Display Server Response
             
             filestatus = inFromServer.readBoolean();
+            System.out.println(filestatus);
 
-             int N = inFromServer.readInt();
+            int N = inFromServer.readInt();
             int M = inFromServer.readInt();
 
            
