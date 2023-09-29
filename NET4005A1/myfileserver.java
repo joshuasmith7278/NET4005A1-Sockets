@@ -126,7 +126,6 @@ class WorkerThread extends Thread {
         outToClient.writeLong(file.length());
         int byteRead;
         while((byteRead = fileReader.read(buffer)) != -1){
-            System.out.println(byteRead);
             outToClient.write(buffer, 0, byteRead);
             outToClient.flush();
             
@@ -177,7 +176,6 @@ class WorkerThread extends Thread {
                 
                 
                 sendFile(filename);
-                Thread.sleep(5000);
                 
                 System.out.println("REQ " + N + ": Successful");
                 
@@ -205,7 +203,7 @@ class WorkerThread extends Thread {
           
             
 
-        }catch(InterruptedException | IOException ex){
+        }catch( IOException ex){
             System.out.println("Thread error : " + ex);
         }
 

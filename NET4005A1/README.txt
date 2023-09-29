@@ -41,9 +41,14 @@ SocketHandling()
 
 
 recieveFile()
-- Creates a file output stream that will name a file the name its passed in with ("filename")
-- Read in from the Server output stream the transferred file 
-- Create a buffer to read 
+- Creates a FILE OUTPUT STREAM that will name a file the name its passed in with ("filename")
+- Read in the size of the file from the SERVER INPUT STREAM
+- Create a buffer (4096 byte array) to read chunks of the file at once
+- While the file size isnt 0, write up to 4096 bytes of the file to the FILE OUTPUT STREAM
+- If the current array of bytes is NULL (-1), this means the SERVER has nothing else to send us to read. The file has been 
+entirely read. You can break the while loop if this occurs before the file size is 0
+- Subtract those bytes written from the file size variable, and continute to loop until the loop breaks.
+
 
 
 
@@ -115,8 +120,9 @@ checkForFile()
 
 sendFile()
 - Uses FileInputStream to read the contents of a file
-- Uses Stream Sockets to send one byte of the file at a time to the client.
-- The client reads and puts together the file, one byte at a time
+- Uses Stream Sockets to an array of bytes at a time (4096 bytes).
+- While the FILE READER isnt null, write the byte array to the client through the STREAM OUTPUT
+- The client reads and puts together the file
 
 
 

@@ -33,6 +33,8 @@ class SocketHandling extends Thread{
     }
 
     public static void receiveFile(String filename) throws IOException{
+
+        System.out.println("Downloading file " + filename);
        
         FileOutputStream fileOutputStream = new FileOutputStream(filename);
 
@@ -51,15 +53,11 @@ class SocketHandling extends Thread{
                 break;
             }
             
-            System.out.println(size);
-            System.out.println(currentByte);
-            
-            
             fileOutputStream.write(buffer, 0, currentByte);
             size -= currentByte;
         }
 
-        System.out.println("File Recieved");
+        System.out.println("Download complete");
         fileOutputStream.close();
     }
 
@@ -79,7 +77,6 @@ class SocketHandling extends Thread{
             //Process and Display Server Response
             
             filestatus = inFromServer.readBoolean();
-            System.out.println(filestatus);
 
             int N = inFromServer.readInt();
             int M = inFromServer.readInt();
@@ -90,9 +87,9 @@ class SocketHandling extends Thread{
             if(filestatus){
                 System.out.println("File " + filename + " found at server");
                 System.out.println("Server handled " + String.valueOf(N) + " requests, " + String.valueOf(M) + " requests were successful");
-                System.out.println("Downloading file " + filename);
+                
                 receiveFile(filename);
-                System.out.println("Download complete");
+                
 
 
             }else{
