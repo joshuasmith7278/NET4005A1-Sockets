@@ -1,33 +1,90 @@
 The protocol will transfer a file from the local directory of the server application, to the current directory the client
-application is ran from. The server must be running before any file requests can be handled.
+application is ran from. A TCP socket connection is created between the Server and Client, and the file requested gets broken into 
+byte arrays on the Server side and sent accross the TCP stream. The client recieves these byte arrays and re builds them on
+their side as a new file. The server will keep track of statistics relating to the function of the server. N will represent
+total requests, while M will represnt successful requests. A successful request is when a file is written from the server to 
+the client directory. 
 
-Set up:
+-------------------------- Set Up Process --------------------------------------------------------------------
 
-Server Terminal :
+- Firstly the server application must be running. To do this you must execute myfileserver.java. The following is 
+an example of how to start the server:
 
 W:\NET4005\Assignment1> java myfileserver.java 
 
-Client Terminal:
+
+- Now the Server is active and can handle requests from client applications on the specific port. You must specify the
+ 3 required arguments in the client execution. (Server hostname, server port, filename) The format of a client request
+  must be the following:
+
+java (client application file) (hostname) (Server port #) (desired filename)
+
+- An example of this format is:
 
 C:\Users\joshu> java W:\NET4005\Assignment1\myfileclient.java localhost 8000 pic.png
 
 
-This will download pic.png from W:\NET4005\Assigments1 and write the file to C:\Users\joshu
 
-The desired file must exist in the W:\NET4005\Assigments1 to be downloaded to the client.
+---------------------- File Transfer Operation -----------------------------------------------------------------
+
+The operation of the file transfer starts with the client requesting a file name.
+
+The server reads in the file name, and then checks if it has this EXACT filename in its local directory. It will only check 
+its local directory.
+
+If the server finds the file name in its local directory, we set a server file status flag to TRUE.
+
+Our Client Request Thread has an If Condition to run our send File function if the file status is true.
+
+The Send File function uses the filename recieved from the client and writes that file to the client.
+
+The server writes the file by breaking it down into byte arrays (4096 bytes) and transfers that at a time until the entire file 
+has been written (all the bytes). 
+
+Once the entire file is transfered, the server will output the results and statistics. On the client side, the application 
+should print client side output and then end the client application. The server should forever be running in a while(true) loop.
 
 
-You must specify the 3 required arguments in the client execution. (Server hostname, server port, filename)
+
+------------------------- Outputs / Message Formatting ------------------------------------------------
+
+- The Server will print 4 messages for every request it recieves. Each message will include N referencing the specific request (the first 
+request the server gets will be N = 1). The messages will indicate who is requesting what file, and if the operation was successful 
+or not. 
+
+REQ <N>: File <X> requested from <IP>
+REQ <N>: [Not] Successful
+REQ <N>: Total successful requests so far = <M>
+REQ <N>: File transfer complete
+
+- The Client will print 4 messages during its request. The Messages will indicate if the server has the file you are requesting, as 
+well as relay the servers statistics (including the requests of the client), and if the transfer operation was successful.
+
+File <filename> [not] found at server
+Server handled <N> requests, <M> requests were successful
+Downloading file <filename> // if the file found
+Download complete // if the file found
+
+
+- File formatting. The file requested from the client is case sensitive. This means the server will only look for an exact copy of 
+what is being requested. The file transfer operation can handle any file type (.txt, .png, etc)
+
+Ex 1:
+
+Client requests README.txt 
+
+Server has README.txt in its local dir
+
+This operation will be successful
+
+Ex 2:
+
+Client requests READme.txt
+
+Server has README.txt in its local dir
+
+This operation will NOT be successful.
 
 
 
 
-
-
-
-First we create a Stream Socket server to listen to 
-port 8000 on the server application. We create a Socket 
-between any application 
-
-On the client application, we create a Socket with the 
-parameters of the Stream Socket Server (localhost, 8000)
